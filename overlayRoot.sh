@@ -138,11 +138,13 @@ if [ $? -ne 0 ]; then
     /bin/bash
 fi
 # unmount unneeded mounts so we can unmout the old readonly root
+
+mount --move /mnt/proc /proc
+
 umount /mnt/mnt
-umount /mnt/proc
 umount /mnt/dev
 umount /mnt
 # continue with regular init
-exec /sbin/init
+exec /lib/systemd/systemd
 END
 )"
