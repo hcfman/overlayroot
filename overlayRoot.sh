@@ -84,6 +84,12 @@ rootDev=`awk '$2 == "/" {print $1}' /etc/fstab`
 rootMountOpt=`awk '$2 == "/" {print $4}' /etc/fstab`
 rootFsType=`awk '$2 == "/" {print $3}' /etc/fstab`
 echo "check if we can locate the root device based on fstab"
+
+# Convert rootDev from UUID or PARTID specification to a device path
+if [ "${rootDev#/}" = "${rootDev}" ] ; then
+    rootDev=`blkid -t "$rootDev" -o device`
+fi
+
 blkid $rootDev
 if [ $? -gt 0 ]; then
     echo "no success, try if a filesystem with label 'rootfs' is avaialble"
