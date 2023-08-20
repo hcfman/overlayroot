@@ -1,4 +1,5 @@
 #!/bin/sh
+
 #  Read-only Root-FS for Raspian using overlayfs
 #  Version 1.1
 #
@@ -80,38 +81,11 @@ mkdir /mnt/rw/upper
 mkdir /mnt/rw/work
 mkdir /mnt/newroot
 # mount root filesystem readonly 
-rootDev=`awk '$2 == "/" {print $1}' /etc/fstab`
+rootDev=`blkid -L "rootfs"`
 rootMountOpt=`awk '$2 == "/" {print $4}' /etc/fstab`
 rootFsType=`awk '$2 == "/" {print $3}' /etc/fstab`
 echo "check if we can locate the root device based on fstab"
 
-# Convert rootDev from UUID or PARTID specification to a device path
-if [ "${rootDev#/}" = "${rootDev}" ] ; then
-    rootDev=`blkid -t "$rootDev" -o device`
-fi
-
-blkid $rootDev
-if [ $? -gt 0 ]; then
-    echo "no success, try if a filesystem with label 'rootfs' is avaialble"
-    rootDevFstab=$rootDev
-    rootDev=`blkid -L "rootfs"`
-    if [ $? -gt 0 ]; then
-        echo "no luck either, try to further parse fstab's root device definition"
-        echo "try if fstab contains a PARTUUID definition"
-        echo "$rootDevFstab" | grep 'PARTUUID=\(.*\)-\([0-9]\{2\}\)'
-        if [ $? -gt 0 ]; then 
-	    fail "could not find a root filesystem device in fstab. Make sure that fstab contains a device definition or a PARTUUID entry for / or that the root filesystem has a label 'rootfs' assigned to it"
-        fi
-        device=""
-        partition=""
-        eval `echo "$rootDevFstab" | sed -e 's/PARTUUID=\(.*\)-\([0-9]\{2\}\)/device=\1;partition=\2/'`
-        rootDev=`blkid -t "PTUUID=$device" | awk -F : '{print $1}'`p$(($partition))
-        blkid $rootDev
-        if [ $? -gt 0 ]; then
-	    fail "The PARTUUID entry in fstab could not be converted into a valid device name. Make sure that fstab contains a device definition or a PARTUUID entry for / or that the root filesystem has a label 'rootfs' assigned to it"
-        fi
-    fi
-fi
 mount -t ${rootFsType} -o ${rootMountOpt},ro ${rootDev} /mnt/lower
 if [ $? -ne 0 ]; then
     fail "ERROR: could not ro-mount original root partition"
