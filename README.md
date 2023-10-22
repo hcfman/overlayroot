@@ -1,5 +1,5 @@
 # overlayroot
-Clone of elegant overlayRoot.sh solution from Pascal Suter for running a Raspberry Pi from a read-only rootfs mount.
+Greatly inspired by and lots copied from the elegant overlayRoot.sh solution from Pascal Suter for running a Raspberry Pi from a read-only rootfs mount.
 
 It has been amended to keep working on recent raspberry pi's as things change including Debian bookworm
 
